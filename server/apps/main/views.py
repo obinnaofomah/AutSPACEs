@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.core.paginator import Paginator
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
+from django.views.generic import FormView
 
 from .models import PublicExperience
 from server.apps.users.models import UserProfile
@@ -665,3 +666,18 @@ def single_story(request, uuid):
         return render(request, "main/single_story.html", context=context)
     except ObjectDoesNotExist:
         return redirect("main:overview")
+
+
+# def blog_page(request):
+#     all_triggers = request.GET.get("tmp_search", False)
+#     print(all_triggers)
+#     return render(request = request, template_name='main/blog.html')
+    
+def tmp_search(request):
+    search_term = request.GET.get("thing_you_have_to_look_for", False)
+    print(search_term)
+    op = PublicExperience.objects.filter(experience_text__search=search_term)
+    print(len(op))
+    helens_search_results = {}
+    helens_search_results['stories'] = op
+    return render(request, "main/blog.html", context=helens_search_results)

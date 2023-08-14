@@ -47,6 +47,7 @@ INSTALLED_APPS: Tuple[str, ...] = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django.contrib.postgres',
 
     # django-admin:
     'django.contrib.admin',
