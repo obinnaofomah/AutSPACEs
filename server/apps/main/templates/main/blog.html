@@ -1,0 +1,63 @@
+{% extends 'main/application.html' %}
+{% load static %}
+{% block title %}AutSPACEs - {{ title }} {% endblock %}
+{% block content %}
+<!--Contents-->
+<!-- <section id="content">
+  <div class="container-fluid">
+    <div class="row"> -->
+      Search Here:
+      <form id=search-form method="GET" action="{% url 'main:blog' %}">
+        <input class="form-control mb-2"
+          id="inlineFormInput"
+          placeholder="Placeholder text"
+          value="{{ value_goes_here }}"
+           type="text"
+           name="thing_you_have_to_look_for">
+
+<!--      
+        <div>
+            <input class="form-check-input" type="checkbox" id="flexCheckDefault" name="negbody"  value="True">
+            <label class="form-check-label" for="flexCheckDefault" >
+              Default checkbox
+            </label>
+        </div>
+           -->
+        <div class="custom-control custom-switch">
+            <input class="custom-control-input"
+            type="checkbox"
+            id="all-checkbox"
+            name='negbody'
+            value="True"
+        >
+            <!-- {{ checkall|yesno:"checked,unchecked" }}> -->
+          <label class="custom-control-label" for="all-checkbox">Negative body image</label>
+       
+          
+        </div>
+           
+           
+        </form>
+        <!-- {% if searched %}
+        <div class="container-fluidr story-text">
+        <p class="story-header">Search results for '{{ tmp_search }}'</p>
+        </div>
+      {% endif %} -->
+        <!-- <section id="stories-post">
+          <div class="container-fluidr story-text"> -->
+            {% for story in stories %}
+            <div class="row">
+              <div class="col-lg-12 story">
+                {% firstof story.title_text "no title given" %}
+              </div>
+            </div>
+            {% endfor %}
+          <!-- </div>
+        </section> -->
+    <!-- </div>
+  </div>
+</section> -->
+
+
+
+{%endblock%}
