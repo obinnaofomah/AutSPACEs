@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.core.paginator import Paginator
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
+from django.views.generic import FormView
 
 from .models import PublicExperience
 from server.apps.users.models import UserProfile
@@ -48,7 +49,6 @@ from .helpers import (
     number_stories,
     get_message,
     message_wrap,
-    experience_titles_for_session,
 )
 
 from server.apps.users.helpers import (
@@ -66,7 +66,7 @@ def confirmation_page(request):
     if request.user.is_authenticated:
         return render(request, "main/confirmation_page.html")
     else:
-        return redirect("index")
+        return redirect("main:overview")
 
 
 def about_us(request):
@@ -108,10 +108,21 @@ def logout_user(request):
     return redirect("index")
 
 
-# @vcr.use_cassette("tmp/overview.yaml", filter_query_parameters=['access_token'])
 def index(request):
     """
     Starting page for app.
+    """
+    auth_url = OpenHumansMember.get_auth_url()
+    context = {"auth_url": auth_url, "oh_proj_page": settings.OH_PROJ_PAGE}
+    if request.user.is_authenticated:
+        return redirect("main:overview")
+    return render(request, "main/home.html", context=context)
+
+
+# @vcr.use_cassette("tmp/overview.yaml", filter_query_parameters=['access_token'])
+def overview(request):
+    """
+    Overview page for logged in users directs to home, otherwise to index.
     """
     if request.user.is_authenticated:
         oh_member = request.user.openhumansmember
@@ -121,10 +132,8 @@ def index(request):
             "oh_user": oh_member.user,
             "oh_proj_page": settings.OH_PROJ_PAGE,
         }
-    else:
-        auth_url = OpenHumansMember.get_auth_url()
-        context = {"auth_url": auth_url, "oh_proj_page": settings.OH_PROJ_PAGE}
-    return render(request, "main/home.html", context=context)
+        return render(request, "main/home.html", context=context)
+    return redirect("index")
 
 def login_user(request):
     """
@@ -139,7 +148,7 @@ def login_user(request):
             UserProfile.objects.update_or_create(user=request.user)
             return redirect("users:greetings")
 
-    return redirect("main:index")
+    return redirect("main:overview")
 
 # @vcr.use_cassette("server/apps/main/tests/fixtures/share_exp.yaml", filter_query_parameters=['access_token', 'AWSAccessKeyId'])
 def share_experience(request, uuid=False):
@@ -272,17 +281,15 @@ def view_experience(request, uuid):
             },
         )
     else:
-        return redirect("index")
+        return redirect("main:overview")
 
 
 # @vcr.use_cassette("server/apps/main/tests/fixtures/delete_exp.yaml", filter_query_parameters=['access_token'])
-def delete_experience(request, uuid):
+def delete_experience(request, uuid, title):
     """
     Delete experience from PE databacse and OH
     """
-    
-    titles = request.session.get('titles', {})
-    title = titles.get(uuid, "no title")
+    # TODO: we currently are passing title via url because it is nice to display it in the confirmation. We could improve the deletion process by having a javascript layover.
 
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -396,7 +403,7 @@ def moderate_public_experiences(request):
             },
         )
     else:
-        return redirect("index")
+        return redirect("main:overview")
 
 
 def moderation_list(request):
@@ -433,7 +440,7 @@ def moderation_list(request):
 
         return moderate_page(request, status, experiences)
     else:
-        return redirect("index")
+        return redirect("main:overview")
 
 #@vcr.use_cassette("server/apps/main/tests/fixtures/pag_mystories.yaml", filter_query_parameters=['access_token'])
 def my_stories(request):
@@ -445,9 +452,6 @@ def my_stories(request):
         files = request.user.openhumansmember.list_files()
         context = {"files": files}
         context = reformat_date_string(context)
-
-        # add experience titles to session for deletion pages
-        request.session['titles']= experience_titles_for_session(files)
 
         # Define the number of items per page
         items_per_page = settings.EXPERIENCES_PER_PAGE
@@ -494,7 +498,7 @@ def my_stories(request):
             },
         )
     else:
-        return redirect("index")
+        return redirect("main:overview")
 
 def moderate_experience(request, uuid):
     """
@@ -661,4 +665,29 @@ def single_story(request, uuid):
         context = {**exp_context, **title_context}
         return render(request, "main/single_story.html", context=context)
     except ObjectDoesNotExist:
-        return redirect("index")
+        return redirect("main:overview")
+
+
+# def blog_page(request):
+#     all_triggers = request.GET.get("tmp_search", False)
+#     print(all_triggers)
+#     return render(request = request, template_name='main/blog.html')
+    
+def blog_search(request):
+    search_term = request.GET.get("thing_you_have_to_look_for", False)
+    is_negbody = request.GET.get('is_negbody', False)
+    
+    
+    experience = PublicExperience.objects.filter(
+        experience_text__search=search_term,
+        moderation_status='approved')
+    
+    
+    if not is_negbody:
+        pass
+    else:
+        experience = experience.filter(Q(negbody=True) | Q(negbody=False))
+
+    helens_search_results = {}
+    helens_search_results['stories'] = experience
+    return render(request, "main/blog.html", context=helens_search_results)
