@@ -680,13 +680,14 @@ def blog_search(request):
     
     experience = PublicExperience.objects.filter(
         experience_text__search=search_term,
-        moderation_status='approved')
+        moderation_status = 'approved')
     
     
-    if not is_negbody:
-        pass
-    else:
+    if is_negbody:
         experience = experience.filter(Q(negbody=True) | Q(negbody=False))
+    else:
+        experience = experience.exclude(negbody=True)
+
 
     helens_search_results = {}
     helens_search_results['stories'] = experience
