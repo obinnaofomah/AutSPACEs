@@ -51,6 +51,7 @@ INSTALLED_APPS: Tuple[str, ...] = (
     # django-admin:
     'django.contrib.admin',
     'django.contrib.admindocs',
+    'django.contrib.postgres',
 
     # Security:
     'axes',
@@ -160,7 +161,8 @@ TEMPLATES = [{
             'django.template.context_processors.media',
             'django.contrib.messages.context_processors.messages',
             'django.template.context_processors.request',
-            'server.apps.main.context_processors.create_auth_url'
+            'server.apps.main.context_processors.create_auth_url',
+            
         ],
     },
 }]

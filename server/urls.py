@@ -26,6 +26,7 @@ urlpatterns = [
     # Apps:
     path('main/', include(main_urls, namespace='main')),
     path('users/', include(users_urls, namespace='users')),
+    
 
     # Health checks:
     path('health/', include(health_urls)),  # noqa: DJ05
